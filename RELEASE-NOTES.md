@@ -13,3 +13,5 @@
 Abra Atualizações → Verificar atualizações. Ou baixe o ZIP, feche o HuntLog e extraia todo o conteúdo para uma nova pasta. Abra Huntlog.exe mantendo a pasta _internal junto dele.
 
 Faça um backup antes de atualizar. Seu diário fica salvo separadamente, na pasta do usuário do Windows.
+
+O endereço do atualizador foi corrigido para HonDriX/huntlog. Versões anteriores podem precisar desta atualização manualmente uma vez.

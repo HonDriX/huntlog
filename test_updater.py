@@ -36,7 +36,7 @@ class UpdaterTests(unittest.TestCase):
 
     def release(self, tag='v0.6.2'):
         return {'tag_name': tag, 'assets': [
-            {'name': name, 'browser_download_url': f'https://github.com/hesuch/huntlog/releases/download/{tag}/{name}'}
+            {'name': name, 'browser_download_url': f'https://github.com/HonDriX/huntlog/releases/download/{tag}/{name}'}
             for name in (updater.ASSET, updater.ASSET + '.sha256.txt')]}
 
     def test_versions_and_release_validation(self):

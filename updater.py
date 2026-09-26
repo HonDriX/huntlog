@@ -12,7 +12,7 @@ import zipfile
 from pathlib import Path
 import truststore
 
-REPO = 'hesuch/huntlog'
+REPO = 'HonDriX/huntlog'
 ASSET = 'Huntlog-Desktop-Windows.zip'
 
 def version(value):
@@ -33,7 +33,7 @@ def read_url(url, limit):
             raise ValueError('Não foi possível validar a conexão segura com o GitHub. '
                              'Confira a data e a hora do Windows e suas atualizações. '
                              'Se continuar, baixe a versão pelo navegador em '
-                             'https://github.com/hesuch/huntlog/releases/latest. '
+                             'https://github.com/HonDriX/huntlog/releases/latest. '
                              'Nenhuma atualização foi instalada.') from error
         raise
     if len(result) > limit:
