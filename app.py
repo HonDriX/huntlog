@@ -25,7 +25,7 @@ def resource_profession(name):
     key = pokemon_key(name)
     return PROFESSION_RESOURCES.get(key, PROFESSION_RESOURCES.get(key[:-1], '') if key.endswith('s') else '')
 
-APP_VERSION = "0.6.7-desktop"
+APP_VERSION = "0.6.8-desktop"
 TERROR_IMAGES = json.loads((ROOT / "static" / "terror-images.json").read_text(encoding="utf-8"))
 DUNGEONS = json.loads((ROOT / "static" / "dungeons.json").read_text(encoding="utf-8"))
 DUNGEON_IMAGES = json.loads((ROOT / "static" / "dungeon-images.json").read_text(encoding="utf-8"))
@@ -282,8 +282,13 @@ def normalize_record(candidate):
                          if category == "mystery_dungeon" else "",
         "hunt_image": (nightmare_hunt(location) or {}).get("image", "") if category == "hunt" else "",
         "location_suggestions": suggestions, "dungeon_options": DUNGEONS,
-        "suggested_category": ('mystery_dungeon' if suggestions['mystery_dungeon'] and not any(
-            counted_enemy(e) and bool(boss_image(e['name'], 'mixed')) for e in enemies or []) else ''),
+        "suggested_category": (('mystery_dungeon' if suggestions['mystery_dungeon'] else
+                                'hunt' if nightmare_hunt(suggestions['hunt']) else '')
+                               if not any(counted_enemy(e) and bool(boss_image(e['name'], 'mixed'))
+                                          for e in enemies or []) else
+                               'terror' if any(counted_enemy(e) and boss_key(e['name']) in
+                                               ('missingno', 'terrormissingno') for e in enemies or [])
+                               and not suggestions['mystery_dungeon'] and not nightmare_hunt(suggestions['hunt']) else ''),
         "hunt_options": [hunt['name'] for hunt in NIGHTMARE_HUNTS],
         "server": label(candidate.get("server")),
         "pokemon": label(candidate.get("pokemon")), "notes": label(candidate.get("notes"), 2000),
@@ -343,6 +348,22 @@ def combine_terror_pair(enemies):
     return enemies
 
 
+def add_missingno_reward(report, enemies):
+    # Rewards identify one completion, not one boss per item or party member.
+    result = list(enemies or [])
+    if any(boss_key(e['name']) in ('missingno', 'terrormissingno') for e in result):
+        return enemies
+    rewards = {}
+    for row in report.get('Drops', []):
+        if row.get('Ignored') is True or number(row.get('Count', 0), 'Quantidade', integer=True) <= 0:
+            continue
+        rewards.setdefault(label(row.get('Player')).casefold(), set()).add(pokemon_key(label(row.get('Item'))))
+    if any('nightmareunusualore' in names and any(n.startswith('technologicalcrystal') for n in names)
+           for names in rewards.values()):
+        result.append(dict(name='Terror MissingNo', count=1, rare=False, included=True))
+    return result if result else enemies
+
+
 def parse_report(report, characters=None):
     if isinstance(report, str):
         try:
@@ -352,6 +373,15 @@ def parse_report(report, characters=None):
     if not isinstance(report, dict) or not isinstance(report.get("Session"), dict):
         raise ValueError("Não encontrei a seção Session. Cole o resumo completo da hunt.")
     session = report["Session"]
+    # Empty Lua tables may be exported as {} instead of []. Do not mutate
+    # the caller's report or discard nonempty malformed sections.
+    report = dict(report)
+    for section in ('Drops', 'Supplies', 'Enemies Defeated', 'Damage'):
+        value = report.get(section)
+        if section in report and (value is None or isinstance(value, dict) and not value):
+            report[section] = []
+    if type(report.get('Supplies')) in (int, float) and report['Supplies'] == 0:
+        report['Supplies'] = []
     for section in ('Drops', 'Supplies', 'Enemies Defeated', 'Damage'):
         if section in report and (not isinstance(report[section], list) or
                                  any(not isinstance(row, dict) for row in report[section])):
@@ -403,6 +433,7 @@ def parse_report(report, characters=None):
             enemies.append({"name": row.get("Enemy"), "count": row.get("Count"),
                             "rare": row.get("Rare") is True, "included": row.get("Ignored") is not True})
     enemies = add_terror_zoroark(report, enemies)
+    enemies = add_missingno_reward(report, enemies)
     if len(players) > 1 and not party:
         raise ValueError("Esta primeira versão aceita hunts de um personagem por resumo.")
     return normalize_record({

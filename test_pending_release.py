@@ -4,6 +4,73 @@ from app import Store,parse_report,normalize_record,statistics,boss_image
 from wiki_assets import WikiSprites
 
 class PendingReleaseTests(unittest.TestCase):
+    def test_missingno_rewards(self):
+        from app import add_missingno_reward
+        drops=[dict(Item=n,Count=2,Player='Meu char') for n in
+               ('Nightmare unusual ore','Technological Crystal (Tier: 7)')]
+        enemies=add_missingno_reward({'Drops':drops},[])
+        self.assertEqual(len(enemies),1)
+        self.assertEqual(enemies[0]['count'],1)
+        self.assertEqual(add_missingno_reward({'Drops':drops},enemies),enemies)
+        self.assertFalse(add_missingno_reward({'Drops':drops[:1]},[]))
+        drops[1]['Ignored']=True
+        self.assertFalse(add_missingno_reward({'Drops':drops},[]))
+        base=parse_report(json.loads(Path('exemplo.json').read_text(encoding='utf-8')))
+        record=normalize_record(dict(base,enemies=enemies,location='',location_source='auto'))
+        self.assertEqual(record['suggested_category'],'terror')
+        record=normalize_record(dict(record,category='terror'))
+        self.assertEqual(record['kills'],1)
+        self.assertEqual(record['enemies'][0]['image_name'],'Nightmare Terror - Desconhecido')
+
+    def test_known_hunt_category_suggestion(self):
+        base=parse_report(json.loads(Path('exemplo.json').read_text(encoding='utf-8')))
+        for name in ('Nightmare Alolan Dugtrio','Nightmare Lycanroc','Lycanroc'):
+            candidate=dict(base,category='hunt',location='',location_source='auto',
+                enemies=[dict(name=name,count=100,included=True,rare=False)])
+            self.assertEqual(normalize_record(candidate)['suggested_category'],'hunt')
+            candidate['enemies'].append(dict(name='Terror Gyarados',count=1,included=True,rare=False))
+            self.assertNotEqual(normalize_record(candidate)['suggested_category'],'hunt')
+
+    def test_lycanroc_hunt_alias(self):
+        base=parse_report(json.loads(Path('exemplo.json').read_text(encoding='utf-8')))
+        for name in ('Lycanroc','Nightmare Lycanroc'):
+            record=normalize_record(dict(base,category='hunt',location='',location_source='auto',
+                enemies=[dict(name=name,count=506,included=True,rare=False)]))
+            self.assertEqual(record['location'],'Nightmare Lycanroc')
+            self.assertEqual(record['hunt_image'],'Nightmare Hunt - Lycanroc')
+            self.assertEqual(record['enemies'][0]['name'],name)
+            self.assertEqual(record['kills'],506)
+            record['location']=name;record['location_source']='manual'
+            self.assertEqual(normalize_record(record)['hunt_image'],'Nightmare Hunt - Lycanroc')
+
+    def test_celebi_mystery_association(self):
+        base=parse_report(json.loads(Path('exemplo.json').read_text(encoding='utf-8')))
+        for name,location in [('Celebi','???'),('Dark Celebi','Dark Celebi')]:
+            record=dict(base,location='',location_source='auto',enemies=[dict(name=name,count=1,included=True,rare=False)])
+            record=normalize_record(record)
+            self.assertEqual(record['suggested_category'],'mystery_dungeon')
+            record['category']='mystery_dungeon'
+            record=normalize_record(record)
+            self.assertEqual(record['location'],location)
+            self.assertEqual(record['kills'],1)
+            self.assertTrue(record['dungeon_image'])
+
+    def test_empty_supplies_exports(self):
+        base=json.loads(Path('exemplo.json').read_text(encoding='utf-8'))
+        base['Session']['Supplies']=0
+        for value in ({}, None, [], 0):
+            report=copy.deepcopy(base);report['Supplies']=value
+            before=copy.deepcopy(report)
+            parsed=parse_report(report)
+            self.assertEqual(parsed['supplies'],0)
+            self.assertFalse(any(i['kind']=='supply' for i in parsed['items']))
+            self.assertEqual(report,before)
+        report=copy.deepcopy(base);report.pop('Supplies',None)
+        self.assertEqual(parse_report(report)['supplies'],0)
+        for value in ({'Item':'Potion'}, 100, 'invalid', False):
+            report=copy.deepcopy(base);report['Supplies']=value
+            with self.assertRaises(ValueError):parse_report(report)
+
     def test_profession_partition(self):
         from app import resource_profession
         base=parse_report(json.loads(Path('exemplo.json').read_text(encoding='utf-8')))

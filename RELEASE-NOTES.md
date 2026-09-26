@@ -1,17 +1,15 @@
-# HuntLog 0.6.7
+# HuntLog 0.6.8
 
-## Novidades
+## Novidades e correções
 
-- Novo visual Pokédex, com carcaça vermelha e rolagem dentro do visor. Para voltar ao visual anterior, escolha Aparência → Atual na lateral.
-- Gerenciador de energia vermelha para todos os personagens cadastrados no perfil. Configure o saldo atual, o máximo, Rainbow Hero e o talento de regeneração (0 a 20%).
-- Botões para gastar 40 ou 52 de energia e adicionar 40 com Condensed Red Energy Potion. A recarga é calculada mesmo com o programa fechado e respeita o limite máximo.
-- Clique no nome do personagem para configurar a energia ou no ícone para trocar a foto por um arquivo, GIF ou link.
-- Backup e restauração agora ficam dentro de Meu perfil. Os novos backups incluem perfil, energia e fotos dos personagens, além do histórico e preços.
-- O resumo semanal abre automaticamente apenas uma vez para cada semana concluída neste navegador/aplicativo. Continua acessível pelo botão Resumo semanal.
-- Nome HuntLog revisado, cabeçalho repetido removido e créditos para HonDriX no rodapé. Perfil e moldura permanecem na posição enquanto você navega.
+- Contador em Energia vermelha mostra quantos personagens têm pelo menos 52 de energia. Atualiza com a recarga e os gastos e desaparece quando nenhum estiver pronto.
+- Importação aceita resumos sem supplies, inclusive se a seção vazia vier como objeto, null ou zero.
+- Celebi é reconhecido como Mystery Dungeon “???”, mantendo Dark Celebi separado.
+- Lycanroc e Nightmare Lycanroc usam a mesma imagem da hunt. Hunts reconhecidas selecionam automaticamente a categoria Hunt na revisão.
+- Terror MissingNo é reconhecido com a imagem do Desconhecido. Sem a derrota registrada, Nightmare unusual ore junto de Technological Crystal identifica uma conclusão, sem duplicar. Os drops continuam limitados aos personagens do perfil.
 
 ## Como atualizar
 
-No programa, abra Atualizações → Verificar atualizações. Ou baixe o ZIP, feche o HuntLog e extraia todo o conteúdo para uma nova pasta. Abra Huntlog.exe mantendo a pasta _internal junto dele.
+Abra Atualizações → Verificar atualizações. Ou baixe o ZIP, feche o HuntLog e extraia todo o conteúdo para uma nova pasta. Abra Huntlog.exe mantendo a pasta _internal junto dele.
 
 Faça um backup antes de atualizar. Seu diário fica salvo separadamente, na pasta do usuário do Windows.
