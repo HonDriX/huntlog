@@ -1,6 +1,9 @@
 name: Publicar versão Windows
 on:
   workflow_dispatch:
+  push:
+    branches: [main]
+    paths: [version.txt]
 permissions:
   contents: write
 concurrency:
@@ -26,5 +29,5 @@ jobs:
           GH_TOKEN: ${{ github.token }}
         run: |
           $version = (Get-Content version.txt -Raw).Trim()
-          gh release create "v$version" "release/Huntlog-Desktop-Windows.zip" "release/Huntlog-Desktop-Windows.zip.sha256.txt" --target "${{ github.sha }}" --title "Huntlog $version" --notes "Versão Windows. Extraia todo o ZIP e abra Huntlog.exe. Histórico salvo separadamente em LOCALAPPDATA/HuntlogDesktop."
+          gh release create "v$version" "release/Huntlog-Desktop-Windows.zip" "release/Huntlog-Desktop-Windows.zip.sha256.txt" --target "${{ github.sha }}" --title "Huntlog $version" --notes-file "RELEASE-NOTES.md"
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
