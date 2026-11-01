@@ -216,14 +216,18 @@ def normalize_record(candidate):
         if not name:
             raise ValueError("Existe um item sem nome.")
         count = number(entry.get("count"), f"Quantidade de {name}", integer=True)
-        price = number(entry.get("price"), f"Preço de {name}")
+        variable_total = (number(entry["variable_total"], f"Total de {name}")
+                          if entry.get("variable_total") is not None else None)
+        price = (number(Decimal(str(variable_total)) / count, f"Preço médio de {name}")
+                 if variable_total is not None and count else number(entry.get("price"), f"Preço de {name}"))
         items.append({"kind": entry["kind"], "name": name, "count": count,
                       "price": price, "included": entry.get("included") is not False,
                       "reported_price": None if entry.get("reported_price") is None else
                                         number(entry["reported_price"], f"Preço original de {name}"),
                       "price_source": entry.get("price_source") if entry.get("price_source") in
                                       ("report", "table", "manual", "snapshot") else "report",
-                      "total": number(Decimal(str(price)) * count, f"Total de {name}")})
+                      "variable_total": variable_total,
+                      "total": variable_total if variable_total is not None else number(Decimal(str(price)) * count, f"Total de {name}")})
     enemies = candidate.get("enemies")
     if enemies is not None:
         if not isinstance(enemies, list):
@@ -415,8 +419,16 @@ def parse_report(report, characters=None):
             player = label(row.get("Player"))
             if player:
                 players.add(player)
-            items.append({"kind": kind, "name": row.get("Item"), "count": row.get("Count"),
-                          "price": row.get("Unit price", 0), "reported_price": row.get("Unit price", 0),
+            variable_total = None
+            unit_price = row.get("Unit price", 0)
+            if isinstance(unit_price, str) and unit_price.strip().casefold() == "variable":
+                variable_total = number(row.get("Total price"), "Total do item")
+                quantity = number(row.get("Count"), "Quantidade do item", integer=True)
+                if quantity == 0 and variable_total != 0:
+                    raise ValueError("Item com preço variável tem total sem quantidade.")
+                unit_price = number(Decimal(str(variable_total)) / quantity, "Preço médio") if quantity else 0
+            items.append({"kind": kind, "variable_total": variable_total, "name": row.get("Item"), "count": row.get("Count"),
+                          "price": unit_price, "reported_price": unit_price,
                           "included": row.get("Ignored") is not True})
     enemies = None
     if "Enemies Defeated" in report:
