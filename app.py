@@ -507,6 +507,9 @@ def weekly_summary(records, weeks_ago=1, now=None):
         for item in record['items']:
             if item['included'] and item.get('is_capture'):
                 add(captures, item['name'], item['count'])
+                captured = captures.get(pokemon_key(item['name']))
+                if captured is not None:
+                    captured['total'] = money_sum([captured.get('total', 0), item['total']])
     order = lambda rows: sorted(rows.values(), key=lambda r: (-r['count'], r['name']))
     ranking = sorted(contents.values(), key=lambda r: (-r['profit'], r['name']))
     return {'start': start.isoformat(), 'end': end.isoformat(), 'weeks_ago': weeks_ago,

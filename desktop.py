@@ -30,7 +30,7 @@ def main():
     from PySide6.QtGui import QAction, QDesktopServices, QIcon, QFont, QFontDatabase
     from PySide6.QtWidgets import (QApplication, QFileDialog, QMainWindow, QMessageBox,
                                   QDialog, QVBoxLayout, QLabel, QPlainTextEdit, QDialogButtonBox)
-    from PySide6.QtWebEngineCore import QWebEnginePage, QWebEngineProfile
+    from PySide6.QtWebEngineCore import QWebEnginePage, QWebEngineProfile, QWebEngineSettings
     from PySide6.QtWebEngineWidgets import QWebEngineView
     from app import Handler, LocalHTTPServer, Store
     from wiki_assets import WikiSprites
@@ -98,6 +98,7 @@ def main():
             print(f"Web: {level}: {message} ({source}:{line})")
 
     page = Page(profile, view)
+    page.settings().setAttribute(QWebEngineSettings.WebAttribute.JavascriptCanAccessClipboard, True)
     view.setPage(page)
     page.newWindowRequested.connect(lambda request: QDesktopServices.openUrl(request.requestedUrl())
                                     if request.requestedUrl().scheme() in ("http", "https") and not args.self_test else None)

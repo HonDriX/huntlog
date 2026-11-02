@@ -1,7 +1,7 @@
-# HuntLog 0.6.11
+# HuntLog 0.6.12
 
-- Capturas na visão geral e no resumo semanal ordenadas por tier: T1A, T1B, T1C e tiers seguintes.
-- Destaque laranja forte para T1A, amarelo para T1B e roxo para T1C.
-- Lista de Pokémon derrotados permanece sem essas alterações.
+- T1H e T1C compartilham o mesmo nível e destaque roxo nas capturas. Dentro do mesmo nível, o maior valor total vem primeiro.
+- Exportação do resumo semanal com imagem mais leve, indicação de processamento e reutilização do PNG gerado.
+- Ajustada a permissão de cópia de imagens no aplicativo Windows. Se o navegador bloquear, a interface orienta tentar novamente ou baixar o PNG.
 
 Atualize em Atualizações → Verificar atualizações.
